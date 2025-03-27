@@ -1,30 +1,17 @@
-import type { PinoLogger } from "hono-pino";
+import configureOpenApi from "@/lib/configure-openapi";
+import createApp from "@/lib/create-app";
+import index from "@/routes/index.route";
 
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { notFound, onError } from "stoker/middlewares";
+const app = createApp();
 
-import { pinoLogger } from "@/middlewares/pino-logger";
+const routes = [
+  index,
+];
 
-interface AppBindings {
-  Variables: {
-    logger: PinoLogger;
-  };
-}
-
-const app = new OpenAPIHono<AppBindings>();
-
-app.use(pinoLogger());
-
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
+routes.forEach((route) => {
+  app.route("/", route);
 });
 
-app.get("/error", (c) => {
-  c.var.logger.info("log");
-  throw new Error("error");
-});
-
-app.notFound(notFound);
-app.onError(onError);
+configureOpenApi(app);
 
 export default app;
